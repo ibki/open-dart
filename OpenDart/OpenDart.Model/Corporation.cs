@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace OpenDart.Model
@@ -12,6 +14,8 @@ namespace OpenDart.Model
         /// <summary>
         /// 고유번호 - 공시대상회사의 고유번호(8자리)
         /// </summary>
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
         [XmlElement("corp_code")]
         public string Code { get; set; }
 

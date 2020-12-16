@@ -8,7 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using OpenDart.Model;
 using OpenDart.WebAPI.Services;
 using System;
 using System.Collections.Generic;
@@ -29,7 +31,17 @@ namespace OpenDart.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            #region MongoDB
+            services.Configure<OpenDartDatabaseSettings>(
+                Configuration.GetSection(nameof(OpenDartDatabaseSettings)));
+            services.AddSingleton<IOpenDartDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<OpenDartDatabaseSettings>>().Value);
+            #endregion
+
+            #region HttpClient
             services.AddHttpClient<OpenDartService>();
+            #endregion
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

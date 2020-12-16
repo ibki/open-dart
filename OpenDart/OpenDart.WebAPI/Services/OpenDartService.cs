@@ -20,16 +20,32 @@ namespace OpenDart.WebAPI.Services
             this.configuration = configuration;
         }
 
-        public string QueryString => $"?crtfc_key={configuration["APIKey"]}";
+        public string DefaultQueryString => $"?crtfc_key={configuration["APIKey"]}";
 
         /// <summary>
-        /// https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=abc
+        /// https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         /// </summary>
         /// <returns></returns>
         public async Task<HttpResponseMessage> RequestCorporation()
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"corpCode.xml{QueryString}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"corpCode.xml{DefaultQueryString}");
             var response = await client.SendAsync(request);
+            return response;
+        }
+
+        /// <summary>
+        /// https://opendart.fss.or.kr/api/company.json?crtfc_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&corp_code=00126380
+        /// </summary>
+        /// <param name="corporationCode"></param>
+        /// <returns></returns>
+        public async Task<HttpResponseMessage> RequestCompany(string corporationCode)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"company.json{DefaultQueryString}&corp_code={corporationCode}");
+
+            var response = await client.SendAsync(request);
+
             return response;
         }
     }

@@ -5,12 +5,9 @@ using OpenDart.Model;
 using OpenDart.WebAPI.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
@@ -21,13 +18,11 @@ namespace OpenDart.WebAPI.Controllers
     public class CorporationController : ControllerBase
     {
         private readonly ILogger<CorporationController> logger;
-        private readonly IConfiguration configuration;
         private readonly OpenDartService openDartService;
 
-        public CorporationController(ILogger<CorporationController> logger, IConfiguration configuration, OpenDartService openDartService)
+        public CorporationController(ILogger<CorporationController> logger, OpenDartService openDartService)
         {
             this.logger = logger;
-            this.configuration = configuration;
             this.openDartService = openDartService;
         }
 
@@ -39,6 +34,8 @@ namespace OpenDart.WebAPI.Controllers
 
             try
             {
+                // TODO: Check the cache and returns if exist
+
                 var response = await openDartService.RequestCorporation();
                 if (response.IsSuccessStatusCode)
                 {
@@ -58,6 +55,7 @@ namespace OpenDart.WebAPI.Controllers
                 logger.LogError(ex, ex.Message);
             }
 
+            // Returns "204 - No Content" if null.
             return result;
         }
     }
