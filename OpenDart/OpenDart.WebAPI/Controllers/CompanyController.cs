@@ -19,12 +19,14 @@ namespace OpenDart.WebAPI.Controllers
     public class CompanyController : ControllerBase
     {
         private readonly ILogger<CompanyController> logger;
-        private readonly OpenDartService openDartService;
+        private readonly HttpService httpService;
+        private readonly DatabaseService databaseService;
 
-        public CompanyController(ILogger<CompanyController> logger, OpenDartService openDartService)
+        public CompanyController(ILogger<CompanyController> logger, HttpService httpService, DatabaseService databaseService)
         {
             this.logger = logger;
-            this.openDartService = openDartService;
+            this.httpService = httpService;
+            this.databaseService = databaseService;
         }
 
         // GET: api/<CompanyController>/00126380
@@ -42,13 +44,20 @@ namespace OpenDart.WebAPI.Controllers
 
             try
             {
-                // TODO: Check the cache and returns if exist
-
-                var response = await openDartService.RequestCompany(corporationCode);
-                if (response.IsSuccessStatusCode)
+                if (await databaseService.IsEmptyCompany(corporationCode))
                 {
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    result = JsonSerializer.Deserialize<Company>(responseString);
+                    var response = await httpService.RequestCompany(corporationCode);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        result = JsonSerializer.Deserialize<Company>(responseString);
+
+                        await databaseService.InsertCompany(result);
+                    }
+                }
+                else
+                {
+                    result = await databaseService.GetCompany(corporationCode);
                 }
             }
             catch (Exception ex)

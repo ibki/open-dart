@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace OpenDart.WebAPI.Services
 {
-    public class OpenDartService
+    public class HttpService
     {
         private readonly HttpClient client;
         private readonly IConfiguration configuration;
 
-        public OpenDartService(HttpClient client, IConfiguration configuration)
+        public HttpService(HttpClient client, IConfiguration configuration)
         {
             this.client = client;
             this.client.BaseAddress = new Uri("https://opendart.fss.or.kr/api/");

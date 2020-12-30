@@ -32,14 +32,17 @@ namespace OpenDart.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             #region MongoDB
-            services.Configure<OpenDartDatabaseSettings>(
-                Configuration.GetSection(nameof(OpenDartDatabaseSettings)));
-            services.AddSingleton<IOpenDartDatabaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<OpenDartDatabaseSettings>>().Value);
+            services.Configure<DatabaseSettings>(
+                Configuration.GetSection(nameof(DatabaseSettings)));
+
+            services.AddSingleton<IDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<DatabaseSettings>>().Value);
+
+            services.AddSingleton<DatabaseService>();
             #endregion
 
             #region HttpClient
-            services.AddHttpClient<OpenDartService>();
+            services.AddHttpClient<HttpService>();
             #endregion
 
             services.AddControllers();

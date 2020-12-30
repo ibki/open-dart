@@ -18,12 +18,14 @@ namespace OpenDart.WebAPI.Controllers
     public class CorporationController : ControllerBase
     {
         private readonly ILogger<CorporationController> logger;
-        private readonly OpenDartService openDartService;
+        private readonly HttpService httpService;
+        private readonly DatabaseService databaseService;
 
-        public CorporationController(ILogger<CorporationController> logger, OpenDartService openDartService)
+        public CorporationController(ILogger<CorporationController> logger, HttpService httpService, DatabaseService databaseService)
         {
             this.logger = logger;
-            this.openDartService = openDartService;
+            this.httpService = httpService;
+            this.databaseService = databaseService;
         }
 
         // GET: api/<CorporationController>
@@ -34,20 +36,27 @@ namespace OpenDart.WebAPI.Controllers
 
             try
             {
-                // TODO: Check the cache and returns if exist
-
-                var response = await openDartService.RequestCorporation();
-                if (response.IsSuccessStatusCode)
+                if (await databaseService.IsEmptyCorporation())
                 {
-                    using var responseStream = await response.Content.ReadAsStreamAsync();
-                    using var archive = new ZipArchive(responseStream, ZipArchiveMode.Read, true, Encoding.UTF8);
-                    var entry = archive.Entries.FirstOrDefault();
-                    if (entry != null)
+                    var response = await httpService.RequestCorporation();
+                    if (response.IsSuccessStatusCode)
                     {
-                        using var unzippedEntryStream = entry.Open();
-                        var serializer = new XmlSerializer(typeof(CorporationList));
-                        result = (serializer.Deserialize(unzippedEntryStream) as CorporationList).Corporations;
+                        using var responseStream = await response.Content.ReadAsStreamAsync();
+                        using var archive = new ZipArchive(responseStream, ZipArchiveMode.Read, true, Encoding.UTF8);
+                        var entry = archive.Entries.FirstOrDefault();
+                        if (entry != null)
+                        {
+                            using var unzippedEntryStream = entry.Open();
+                            var serializer = new XmlSerializer(typeof(CorporationList));
+                            result = (serializer.Deserialize(unzippedEntryStream) as CorporationList).Corporations;
+
+                            await databaseService.InsertCorporations(result);
+                        }
                     }
+                }
+                else
+                {
+                    result = new List<Corporation>(await databaseService.GetCorporations());
                 }
             }
             catch (Exception ex)
